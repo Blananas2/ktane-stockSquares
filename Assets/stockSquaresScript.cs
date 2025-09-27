@@ -134,4 +134,89 @@ public class stockSquaresScript : MonoBehaviour
         inp = "";
         NumberSequence.text = null;
     }
+
+    // Twitch Plays by Kilo Bites
+
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} cycle [hovers through all of the squares one by one] || submit 12345 [submits the number you input]";
+#pragma warning restore 414
+
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        string[] split = command.ToUpperInvariant().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+        yield return null;
+
+        if ("CYCLE".ContainsIgnoreCase(split[0]))
+        {
+            if (split.Length > 1)
+            {
+                yield return "sendtochaterror You added too many parameters!";
+                yield break;
+            }
+
+            foreach (KMSelectable smallSquare in SmallSels)
+            {
+                smallSquare.OnHighlight();
+                yield return new WaitForSeconds(1.5f);
+            }
+
+            yield break;
+        }
+
+        if ("SUBMIT".ContainsIgnoreCase(split[0]))
+        {
+            if (split.Length == 1)
+            {
+                yield return "sendtochaterror Please specify what numbers to submit!";
+                yield break;
+            }
+
+            if (split.Length > 2)
+            {
+                yield return "sendtochaterror You added too many parameters!";
+                yield break;
+            }
+
+            if (split[1].Length != 5)
+            {
+                yield return "sendtochaterror Please make sure that the number you have to submit is exactly 5 digits!";
+                yield break;
+            }
+
+            if (!split[1].All(char.IsDigit))
+            {
+                yield return string.Format("sendtochaterror {0} is/aren't valid digit(s)!", split[1].Where(x => !char.IsDigit(x)).Join(", "));
+                yield break;
+            }
+
+            var obtainDigits = split[1].Select(x => x - '0').ToArray();
+
+            foreach (var digit in obtainDigits)
+            {
+                NumberedButtons[digit].OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            CheckButton.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        if (!answer.Join("").StartsWith(inp))
+        {
+            CrossButton.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        for (int i = inp.Length; i < 5; i++)
+        {
+            NumberedButtons[answer[i]].OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        CheckButton.OnInteract();
+        yield return new WaitForSeconds(0.1f);
+    }
 }
