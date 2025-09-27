@@ -109,7 +109,11 @@ public class stockSquaresScript : MonoBehaviour
     void CheckInp()
     {
         CheckButton.AddInteractionPunch(0.5f);
-        if (moduleSolved) { return; }
+        if (moduleSolved)
+        {
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, CheckButton.transform);
+            return;
+        }
         if (inp == answer.Join(""))
         {
             Module.HandlePass();
